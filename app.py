@@ -1,13 +1,17 @@
 import logging
+import os
 
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request, jsonify
+from flask.cli import load_dotenv
 from requests import get
 from urllib.parse import urlparse, parse_qs, unquote
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+load_dotenv()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 @app.route('/')
 def home():
@@ -64,16 +68,35 @@ def get_all_hospitals(latitude, longitude):
 
     return results
 
+def travel_time(latitude, longitude, hospital):
+    url = "https://maps.googleapis.com/maps/api/directions/json"
 
-def travel_time(hospital):
-    pass
+    params = {
+        "origin": f"{latitude},{longitude}",
+        "destination": hospital,
+        "mode": "driving",
+        "key": GOOGLE_API_KEY
+    }
+
+    r = get(url, params=params)
+    r.raise_for_status()
+    data = r.json()
+
+    if data["status"] != "OK":
+        raise RuntimeError(data["status"])
+
+    leg = data["routes"][0]["legs"][0]
+
+    return {
+        "duration": leg["duration"]["value"], # in seconds
+        "distance": leg["distance"]["value"]  # in metres
+    }
 
 def waiting_time(hospital):
     pass
 
 def filter_for_specialty(hospitals, specialty):
     pass
-
 
 @app.route('/api/find-hospital', methods=['POST'])
 def find_hospital():
