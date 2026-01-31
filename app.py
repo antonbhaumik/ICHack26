@@ -19,7 +19,7 @@ def home():
 
 @app.route('/map')
 def map_view():
-    return render_template('map.html')
+    return render_template('map.html', api_key=GOOGLE_API_KEY)
 
 
 @app.route('/api/get-location', methods=['POST'])
@@ -117,6 +117,16 @@ def find_vet():
 def call_taxi():
     # To be implemented
     return jsonify({'status': 'success'})
+
+@app.route('/api/get-destination')
+def get_destination():
+    # TODO: Implement logic to find and return the best hospital
+    # For now, return a placeholder
+    return jsonify({
+        'latitude': 51.5074,
+        'longitude': -0.1278,
+        'name': 'Hospital Name'
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -87,3 +87,56 @@ function getCurrentLocation() {
         );
     });
 }
+
+function initMap() {
+    fetch('/api/get-destination')
+        .then(response => response.json())
+        .then(data => {
+            destinationCoords = {lat: data.latitude, lng: data.longitude};
+            const destination = destinationCoords;
+
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: destination,
+            });
+
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const origin = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    directionsService.route(
+                        {
+                            origin: origin,
+                            destination: destination,
+                            travelMode: google.maps.TravelMode.DRIVING,
+                        },
+                        (result, status) => {
+                            if (status === "OK") {
+                                directionsRenderer.setDirections(result);
+                            }
+                        }
+                    );
+                });
+            }
+        });
+}
+
+function openGoogleMaps() {
+    if (!destinationCoords) {
+        alert('Destination not loaded yet');
+        return;
+    }
+
+    const dest = `${destinationCoords.lat},${destinationCoords.lng}`;
+
+    // Open Google Maps with navigation
+    const url = `https://www.google.com/maps/dir/?api=1&origin=your location&destination=${dest}&travelmode=driving`;
+    window.open(url, '_blank');
+}

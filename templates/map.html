@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospital Route</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap"
+        async
+        defer>
+    </script>
 </head>
 <body>
     <div class="map-container">
-        <div class="map-placeholder">
-            <p>Map will be displayed here</p>
-        </div>
+        <div id="map" style="flex: 1; width: 100%;"></div>
 
         <div class="map-actions">
             <button class="action-button taxi-button" onclick="callTaxi()">
                 Call Taxi/Uber
+            </button>
+            <button class="action-button navigate-button" onclick="openGoogleMaps()">
+                Navigate in Google Maps
             </button>
             <button class="action-button emergency-button" onclick="call999()">
                 Emergency: Call 999

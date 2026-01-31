@@ -135,6 +135,14 @@ h1 {
     background: #d97706;
 }
 
+.navigate-button {
+    background: linear-gradient(135deg, #34A853, #4CAF50);
+}
+
+.navigate-button:hover {
+    background: linear-gradient(135deg, #2E9549, #45A049);
+}
+
 @media (max-width: 600px) {
     h1 {
         font-size: 2rem;
