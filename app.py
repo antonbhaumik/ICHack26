@@ -1,4 +1,3 @@
-import logging
 import os
 
 from bs4 import BeautifulSoup
@@ -8,8 +7,6 @@ from requests import get
 from urllib.parse import urlparse, parse_qs, unquote
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
@@ -29,7 +26,6 @@ def get_location():
     longitude = data.get('longitude')
 
     if latitude and longitude:
-        logger.info(f"Location received: Latitude={latitude}, Longitude={longitude}")
         return jsonify({
             'status': 'success',
             'location': {
@@ -104,7 +100,7 @@ def find_hospital():
     latitude = data.get('latitude')
     longitude = data.get('longitude')
 
-    logger.info(f"Finding hospital near: Latitude={latitude}, Longitude={longitude}")
+    # do some stuff
 
     return jsonify({'status': 'success'})
 
