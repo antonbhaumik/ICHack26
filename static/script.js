@@ -68,11 +68,16 @@ function getCurrentLocation() {
             (position) => {
                 resolve({
                     latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
+                    longitude: position.coords.longitude,
                 });
             },
             (error) => {
                 reject(error);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 50000,
+                maximumAge: 0
             }
         );
     });
