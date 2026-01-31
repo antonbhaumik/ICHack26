@@ -10,6 +10,24 @@ def home():
 def map_view():
     return render_template('map.html')
 
+def get_current_location():
+    pass
+
+def get_all_hospitals(location):
+    pass
+
+def travel_time(hospital):
+    pass
+
+def waiting_time(hospital):
+    pass
+
+def filter_for_specialty(hospitals, specialty):
+    pass
+
+def filter_for_opening_time(hospitals):
+    pass
+
 @app.route('/api/find-hospital', methods=['POST'])
 def find_hospital():
     # To be implemented
