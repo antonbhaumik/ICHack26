@@ -19,20 +19,25 @@ function findHospital() {
         });
 }
 
-function findSpecialist(type) {
-    fetch('/api/find-specialist', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type: type })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // To be implemented - navigate to map view
-        window.location.href = '/map';
-    })
-    .catch(error => console.error('Error:', error));
+function findVet() {
+    getCurrentLocation()
+        .then(location => {
+            return fetch('/api/find-vet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(location)
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.location.href = '/map';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Unable to get your location. Please enable location services.');
+        });
 }
 
 function callTaxi() {

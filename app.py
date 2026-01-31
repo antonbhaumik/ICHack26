@@ -108,11 +108,10 @@ def find_hospital():
 
     return jsonify({'status': 'success'})
 
-@app.route('/api/find-specialist', methods=['POST'])
-def find_specialist():
+@app.route('/api/find-vet', methods=['POST'])
+def find_vet():
     # To be implemented
-    hospital_type = request.get_json().get('type')
-    return jsonify({'status': 'success', 'type': hospital_type})
+    return jsonify({'status': 'success'})
 
 @app.route('/api/call-taxi', methods=['POST'])
 def call_taxi():

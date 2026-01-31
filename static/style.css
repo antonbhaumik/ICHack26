@@ -30,8 +30,8 @@ h1 {
 .main-button {
     width: 100%;
     max-width: 400px;
-    padding: 2rem;
-    font-size: 1.5rem;
+    padding: 3rem;
+    font-size: 2rem;
     font-weight: bold;
     color: white;
     background: #10b981;
@@ -40,7 +40,7 @@ h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .main-button:hover {
@@ -49,46 +49,40 @@ h1 {
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
 }
 
-.specialist-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+.secondary-buttons {
+    display: flex;
     gap: 1rem;
-    margin-bottom: 2rem;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.specialist-button {
-    padding: 1rem;
-    font-size: 0.95rem;
-    color: white;
-    background: #3b82f6;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.specialist-button:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-}
-
-.emergency-button {
+    justify-content: center;
     width: 100%;
     max-width: 400px;
+    margin: 0 auto;
+}
+
+.vet-button,
+.emergency-button {
+    flex: 1;
     padding: 1rem;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
     color: white;
-    background: #ef4444;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.vet-button {
+    background-color: #8b5cf6;
+}
+
+.vet-button:hover {
+    background-color: #7c3aed;
+    transform: translateY(-2px);
+}
+
+.emergency-button {
+    background: #ef4444;
 }
 
 .emergency-button:hover {
@@ -146,7 +140,12 @@ h1 {
         font-size: 2rem;
     }
 
-    .specialist-options {
-        grid-template-columns: 1fr;
+    .main-button {
+        padding: 2.5rem;
+        font-size: 1.75rem;
+    }
+
+    .secondary-buttons {
+        flex-direction: column;
     }
 }
