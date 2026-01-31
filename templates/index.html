@@ -3,64 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #response {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-        }
-    </style>
+    <title>Find a Hospital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Flask!</h1>
-        <p>This is a basic Flask application template.</p>
-        
-        <button onclick="testAPI()">Test API</button>
-        <div id="response"></div>
-    </div>
+        <h1>Find a Hospital</h1>
 
-    <script>
-        async function testAPI() {
-            try {
-                const response = await fetch('/api/hello?name=Developer');
-                const data = await response.json();
-                document.getElementById('response').innerHTML = 
-                    `<strong>API Response:</strong> ${data.message}`;
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-    </script>
+        <button class="main-button" onclick="findHospital()">
+            Find Nearest Hospital
+        </button>
+
+        <div class="specialist-options">
+            <button class="specialist-button" onclick="findSpecialist('eye')">Eye Hospital</button>
+            <button class="specialist-button" onclick="findSpecialist('dental')">Dental Hospital</button>
+            <button class="specialist-button" onclick="findSpecialist('mental')">Mental Health Clinic</button>
+            <button class="specialist-button" onclick="findSpecialist('vet')">Vet Hospital</button>
+        </div>
+
+        <button class="emergency-button" onclick="call999()">
+            Emergency: Call 999
+        </button></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

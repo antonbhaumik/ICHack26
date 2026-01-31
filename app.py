@@ -6,16 +6,25 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
-@app.route('/api/hello', methods=['GET'])
-def hello():
-    name = request.args.get('name', 'World')
-    return jsonify({'message': f'Hello, {name}!'})
+@app.route('/map')
+def map_view():
+    return render_template('map.html')
 
-@app.route('/api/data', methods=['POST'])
-def post_data():
-    data = request.get_json()
-    # Process your data here
-    return jsonify({'status': 'success', 'received': data})
+@app.route('/api/find-hospital', methods=['POST'])
+def find_hospital():
+    # To be implemented
+    return jsonify({'status': 'success'})
+
+@app.route('/api/find-specialist', methods=['POST'])
+def find_specialist():
+    # To be implemented
+    hospital_type = request.get_json().get('type')
+    return jsonify({'status': 'success', 'type': hospital_type})
+
+@app.route('/api/call-taxi', methods=['POST'])
+def call_taxi():
+    # To be implemented
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
