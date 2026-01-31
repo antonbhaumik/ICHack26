@@ -1,25 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find a Hospital</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find a Hospital</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h1>BEST CARE NOW</h1>
 
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="badge">Best Care Now</div>
+
+      <h1>Find the right hospital fast.</h1>
+      <p class="sub">
+        Compare nearby options in minutes. Choose human or veterinary care below.
+      </p>
+
+      <div class="card">
         <button class="main-button" onclick="findHospital()">
-            Find the best hospital for you
+          Find the best hospital for you
         </button>
 
-        <button class="vet-button" onclick="findVet()">Find Veterinary Hospital</button>
+        <div class="secondary-buttons">
+          <button class="vet-button" onclick="findVet()">Veterinary</button>
+          <button class="emergency-button" onclick="call999()">Call 999</button>
+        </div>
 
-        <button class="emergency-button" onclick="call999()">
-            Emergency: Call 999
-        </button></div>
+        <p class="hint">
+          If someone is in immediate danger, call emergency services now.
+        </p>
+      </div>
+    </section>
+  </main>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
