@@ -1,6 +1,10 @@
+import logging
+
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @app.route('/')
 def home():
@@ -10,8 +14,23 @@ def home():
 def map_view():
     return render_template('map.html')
 
-def get_current_location():
-    pass
+
+@app.route('/api/get-location', methods=['POST'])
+def get_location():
+    data = request.get_json()
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
+
+    if latitude and longitude:
+        logger.info(f"Location received: Latitude={latitude}, Longitude={longitude}")
+        return jsonify({
+            'status': 'success',
+            'location': {
+                'latitude': latitude,
+                'longitude': longitude
+            }
+        })
+    return jsonify({'status': 'error', 'message': 'Location not provided'}), 400
 
 def get_all_hospitals(location):
     pass
@@ -28,9 +47,15 @@ def filter_for_specialty(hospitals, specialty):
 def filter_for_opening_time(hospitals):
     pass
 
+
 @app.route('/api/find-hospital', methods=['POST'])
 def find_hospital():
-    # To be implemented
+    data = request.get_json()
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
+
+    logger.info(f"Finding hospital near: Latitude={latitude}, Longitude={longitude}")
+
     return jsonify({'status': 'success'})
 
 @app.route('/api/find-specialist', methods=['POST'])
