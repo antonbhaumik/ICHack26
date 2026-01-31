@@ -1,6 +1,9 @@
 import logging
 
+from bs4 import BeautifulSoup
 from flask import Flask, render_template, request, jsonify
+from requests import get
+from urllib.parse import urlparse, parse_qs, unquote
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -32,8 +35,35 @@ def get_location():
         })
     return jsonify({'status': 'error', 'message': 'Location not provided'}), 400
 
-def get_all_hospitals(location):
-    pass
+def get_all_hospitals(latitude, longitude):
+    html = get(
+        f"https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/results/your%20location?latitude={latitude}&longitude={longitude}&SelectedFilter=AAndEOpenNow").text
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    results = []
+
+    for item in soup.select("li.results__item"):
+        name_el = item.select_one("h3.results__name")
+        map_el = item.select_one("a.maplink")
+
+        if not name_el or not map_el:
+            continue
+
+        name = name_el.get_text(strip=True)
+        url = map_el["href"]
+
+        qs = parse_qs(urlparse(url).query)
+
+        destination = unquote(qs.get("destination", [""])[0])
+
+        results.append({
+            "hospital": name,
+            "address": destination
+        })
+
+    return results
+
 
 def travel_time(hospital):
     pass
@@ -42,9 +72,6 @@ def waiting_time(hospital):
     pass
 
 def filter_for_specialty(hospitals, specialty):
-    pass
-
-def filter_for_opening_time(hospitals):
     pass
 
 
