@@ -140,3 +140,20 @@ function openGoogleMaps() {
     const url = `https://www.google.com/maps/dir/?api=1&origin=your location&destination=${dest}&travelmode=driving`;
     window.open(url, '_blank');
 }
+
+function openUber() {
+    if (!destinationCoords) {
+        alert('Destination not loaded yet.');
+        return;
+    }
+
+    getCurrentLocation()
+        .then(origin => {
+            const url = `https://m.uber.com/go/product-selection?drop[0]={"latitude"%3A${destinationCoords.lat}%2C"longitude"%3A${destinationCoords.lng}%2C"provider"%3A"uber_places"}&pickup={"latitude"%3A${origin.latitude}%2C"longitude"%3A${origin.longitude}%2C"provider"%3A"uber_places"}`;
+            window.open(url, '_blank');
+        })
+        .catch(error => {
+            console.error('Error getting location:', error);
+            alert('Unable to get your current location');
+        });
+}
