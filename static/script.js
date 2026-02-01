@@ -164,6 +164,24 @@ let alternativeMarkers = [];
 let destinationCoords = null;
 let currentInfoWindow = null;
 
+// Helper function to format wait time in hours and minutes
+function formatWaitTime(minutes) {
+    if (minutes === undefined || minutes === null) {
+        return null;
+    }
+    
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours === 0) {
+        return `${mins}m`;
+    } else if (mins === 0) {
+        return `${hours}h`;
+    } else {
+        return `${hours}h${mins}m`;
+    }
+}
+
 // Update the "last updated" timestamp every minute
 function updateLastUpdatedText() {
     const lastUpdatedEl = document.getElementById('lastUpdated');
@@ -388,7 +406,8 @@ function plotAlternativeLocations() {
                             const distanceKm = (hospital.distance / 1000).toFixed(1);
                             let waitTimeDisplay = '';
                             if (hospital.wait_time !== undefined && hospital.wait_time !== null) {
-                                waitTimeDisplay = `<br><strong>Wait time:</strong> ~${hospital.wait_time} min`;
+                                const formattedWaitTime = formatWaitTime(hospital.wait_time);
+                                waitTimeDisplay = `<br><strong>Wait time:</strong> ~${formattedWaitTime}`;
                             }
                             
                             const serviceType = window.SERVICE_TYPE || 'hospital';
@@ -465,7 +484,8 @@ function updateCurrentHospitalBanner(data) {
         }
         
         if (data.wait_time !== undefined && data.wait_time !== null) {
-            details.push(`Wait: ${data.wait_time} min`);
+            const formattedWaitTime = formatWaitTime(data.wait_time);
+            details.push(`Wait: ${formattedWaitTime}`);
         }
         
         if (data.distance) {
@@ -500,7 +520,8 @@ function loadAlternativeHospitals() {
                     // Build wait time display
                     let waitTimeDisplay = '';
                     if (hospital.wait_time !== undefined && hospital.wait_time !== null) {
-                        waitTimeDisplay = `<strong>Wait time:</strong> ~${hospital.wait_time} min | `;
+                        const formattedWaitTime = formatWaitTime(hospital.wait_time);
+                        waitTimeDisplay = `<strong>Wait time:</strong> ~${formattedWaitTime} | `;
                     }
                     
                     const card = document.createElement('div');
