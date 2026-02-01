@@ -184,8 +184,12 @@ RUN ME!!!! :))))))))))
 '''
 
 def run_all(hospital_name, current_time):
-
-    hospital_df = pd.read_csv('hospital_data.csv')
+    import os
+    import pandas as pd
+    
+    # Get the correct path to hospital_data.csv
+    csv_path = os.path.join(os.path.dirname(__file__), 'hospital_data.csv')
+    hospital_df = pd.read_csv(csv_path)
 
     business = estimate_business(hospital_df, hospital_name, current_time)
 

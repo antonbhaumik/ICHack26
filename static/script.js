@@ -150,15 +150,27 @@ function updateCurrentHospitalBanner(data) {
     const nameEl = banner.querySelector('.hospital-name');
     const detailsEl = banner.querySelector('.hospital-details');
 
-    if (data.name && data.duration) {
-        const durationMin = Math.round(data.duration / 60);
-        const distanceKm = (data.distance / 1000).toFixed(1);
+    if (data.name) {
+        nameEl.textContent = data.name;
         
-        nameEl.textContent = data.name;
-        detailsEl.textContent = `${durationMin} min · ${distanceKm} km`;
-    } else if (data.name) {
-        nameEl.textContent = data.name;
-        detailsEl.textContent = '';
+        // Build details string with travel time and wait time
+        let details = [];
+        
+        if (data.duration) {
+            const durationMin = Math.round(data.duration / 60);
+            details.push(`Travel: ${durationMin} min`);
+        }
+        
+        if (data.wait_time !== undefined && data.wait_time !== null) {
+            details.push(`Wait: ${data.wait_time} min`);
+        }
+        
+        if (data.distance) {
+            const distanceKm = (data.distance / 1000).toFixed(1);
+            details.push(`${distanceKm} km`);
+        }
+        
+        detailsEl.textContent = details.join(' · ');
     } else {
         banner.style.display = 'none';
     }
@@ -178,6 +190,12 @@ function loadAlternativeHospitals() {
                     const durationMin = Math.round(hospital.duration / 60);
                     const distanceKm = (hospital.distance / 1000).toFixed(1);
                     
+                    // Build wait time display
+                    let waitTimeDisplay = '';
+                    if (hospital.wait_time !== undefined && hospital.wait_time !== null) {
+                        waitTimeDisplay = `<strong>Wait time:</strong> ~${hospital.wait_time} min | `;
+                    }
+                    
                     const card = document.createElement('div');
                     card.className = 'place-card';
                     card.setAttribute('data-hospital-index', index + 1);
@@ -187,7 +205,7 @@ function loadAlternativeHospitals() {
                         <h3>${hospital.hospital}</h3>
                         <p class="place-desc">${hospital.address}</p>
                         <p class="place-meta">
-                            <strong>Travel time:</strong> ~${durationMin} min | 
+                            ${waitTimeDisplay}<strong>Travel:</strong> ~${durationMin} min | 
                             <strong>Distance:</strong> ${distanceKm} km
                         </p>
                         <button class="visit-btn" data-hospital-index="${index + 1}">Go to this hospital</button>
