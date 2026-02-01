@@ -215,7 +215,6 @@ h1{
 
 .traffic-toggle {
     position: absolute;
-    bottom: calc(1.5rem * 2 + 3.6rem + 1rem + 10px);
     left: 10px;
     z-index: 10;
     padding: 8px 14px;
@@ -241,6 +240,12 @@ h1{
 
 .traffic-toggle:active {
     transform: scale(0.97);
+}
+
+@media (min-width: 641px) {
+    .traffic-toggle {
+        bottom: 140px;
+    }
 }
 
 .map-placeholder {
@@ -287,6 +292,23 @@ h1{
 
 .navigate-button:hover {
     background: linear-gradient(135deg, #2E9549, #45A049);
+}
+
+@media (max-width: 640px) {
+    .traffic-toggle {
+        bottom: 120px;
+    }
+    
+    .map-actions {
+        gap: 0.6rem;
+        padding: 0.9rem;
+    }
+    
+    .action-button {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
 }
 
 /* Burger and right slide-in menu */
