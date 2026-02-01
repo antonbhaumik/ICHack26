@@ -30,7 +30,7 @@
         <div class="side-content">
             <div id="alternativeHospitalsContainer">
                 <!-- Alternative hospitals will be loaded here dynamically -->
-                <p style="text-align: center; color: var(--muted); padding: 20px;">Loading alternative hospitals...</p>
+                <p style="text-align: center; color: var(--muted); padding: 20px;">Loading alternative {% if service_type == 'vet' %}vets{% else %}hospitals{% endif %}...</p>
             </div>
         </div>
     </aside>
@@ -62,6 +62,7 @@
     </div>
 s
     <script>window.MAP_PLACE = {{ request.args.get('place', '')|tojson }};</script>
+    <script>window.SERVICE_TYPE = {{ service_type|tojson }};</script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

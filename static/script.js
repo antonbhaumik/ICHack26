@@ -141,6 +141,9 @@ let trafficLayer = null;
 let mapInstance = null;
 let trafficEnabled = false;
 let pageLoadTime = Date.now();
+let alternativeMarkers = [];
+let destinationCoords = null;
+let currentInfoWindow = null;
 
 // Update the "last updated" timestamp every minute
 function updateLastUpdatedText() {
@@ -239,6 +242,9 @@ function initMap() {
     
     // Load alternative hospitals into the burger menu
     loadAlternativeHospitals();
+    
+    // Plot alternative hospital markers on the map
+    plotAlternativeLocations();
 }
 
 function toggleTraffic() {
@@ -251,6 +257,108 @@ function toggleTraffic() {
     if (statusEl) {
         statusEl.textContent = trafficEnabled ? 'ON' : 'OFF';
     }
+}
+
+function plotAlternativeLocations() {
+    // Clear existing alternative markers
+    alternativeMarkers.forEach(marker => marker.setMap(null));
+    alternativeMarkers = [];
+    
+    // Fetch alternative hospitals
+    fetch('/api/alternative-hospitals')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.hospitals && data.hospitals.length > 0) {
+                // For each alternative hospital, geocode and add a marker
+                data.hospitals.forEach((hospital, index) => {
+                    // Geocode the hospital address
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ address: hospital.address }, (results, status) => {
+                        if (status === 'OK' && results[0]) {
+                            const position = results[0].geometry.location;
+                            
+                            // Create a marker for this alternative location
+                            const marker = new google.maps.Marker({
+                                position: position,
+                                map: mapInstance,
+                                title: hospital.hospital,
+                                label: {
+                                    text: String(index + 2), // Label as 2, 3, 4, 5 (since 1 is the main destination)
+                                    color: 'white',
+                                    fontSize: '13px',
+                                    fontWeight: '600'
+                                },
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 11,
+                                    fillColor: '#EF5350', // Red for alternatives
+                                    fillOpacity: 0.9,
+                                    strokeColor: '#D32F2F',
+                                    strokeWeight: 1.5
+                                }
+                            });
+                            
+                            // Create info window
+                            const durationMin = Math.round(hospital.duration / 60);
+                            const distanceKm = (hospital.distance / 1000).toFixed(1);
+                            let waitTimeDisplay = '';
+                            if (hospital.wait_time !== undefined && hospital.wait_time !== null) {
+                                waitTimeDisplay = `<br><strong>Wait time:</strong> ~${hospital.wait_time} min`;
+                            }
+                            
+                            const serviceType = window.SERVICE_TYPE || 'hospital';
+                            const serviceName = serviceType === 'vet' ? 'vet' : 'hospital';
+                            
+                            const infoWindow = new google.maps.InfoWindow({
+                                content: `
+                                    <div style="padding: 0 8px 8px 8px; max-width: 250px;">
+                                        <h3 style="margin: 0 0 8px 0; font-size: 16px;">${hospital.hospital}</h3>
+                                        <p style="margin: 0 0 6px 0; font-size: 12px; color: #666;">${hospital.address}</p>
+                                        <p style="margin: 0; font-size: 13px;">
+                                            ${waitTimeDisplay}
+                                            <br><strong>Travel:</strong> ~${durationMin} min
+                                            <br><strong>Distance:</strong> ${distanceKm} km
+                                        </p>
+                                        <button onclick="navigateToHospital(${index + 1})" style="
+                                            margin-top: 10px;
+                                            padding: 8px 16px;
+                                            background: #4CAF50;
+                                            color: white;
+                                            border: none;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            font-size: 13px;
+                                        ">Go to this ${serviceName}</button>
+                                    </div>
+                                `
+                            });
+                            
+                            // Show info window on click
+                            marker.addListener('click', () => {
+                                // If this info window is already open, close it
+                                if (currentInfoWindow === infoWindow) {
+                                    currentInfoWindow.close();
+                                    currentInfoWindow = null;
+                                } else {
+                                    // Close any previously open info window
+                                    if (currentInfoWindow) {
+                                        currentInfoWindow.close();
+                                    }
+                                    // Open this info window
+                                    infoWindow.open(mapInstance, marker);
+                                    currentInfoWindow = infoWindow;
+                                }
+                            });
+                            
+                            alternativeMarkers.push(marker);
+                        }
+                    });
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading alternative locations:', error);
+        });
 }
 
 function updateCurrentHospitalBanner(data) {
@@ -287,6 +395,10 @@ function updateCurrentHospitalBanner(data) {
 }
 
 function loadAlternativeHospitals() {
+    const serviceType = window.SERVICE_TYPE || 'hospital';
+    const serviceName = serviceType === 'vet' ? 'Vet' : 'Hospital';
+    const serviceNamePlural = serviceType === 'vet' ? 'Vets' : 'Hospitals';
+    
     fetch('/api/alternative-hospitals')
         .then(response => response.json())
         .then(data => {
@@ -294,7 +406,7 @@ function loadAlternativeHospitals() {
             if (!container) return;
 
             if (data.status === 'success' && data.hospitals && data.hospitals.length > 0) {
-                container.innerHTML = '<h2 style="margin-bottom: 12px; font-size: 18px;">Alternative Hospitals</h2>';
+                container.innerHTML = `<h2 style="margin-bottom: 12px; font-size: 18px;">Alternative ${serviceNamePlural}</h2>`;
                 
                 data.hospitals.forEach((hospital, index) => {
                     const durationMin = Math.round(hospital.duration / 60);
@@ -318,7 +430,7 @@ function loadAlternativeHospitals() {
                             ${waitTimeDisplay}<strong>Travel:</strong> ~${durationMin} min | 
                             <strong>Distance:</strong> ${distanceKm} km
                         </p>
-                        <button class="visit-btn" data-hospital-index="${index + 1}">Go to this hospital</button>
+                        <button class="visit-btn" data-hospital-index="${index + 1}">Go to this ${serviceName.toLowerCase()}</button>
                     `;
                     
                     container.appendChild(card);
@@ -327,14 +439,15 @@ function loadAlternativeHospitals() {
                 // Add click handlers for the hospital cards
                 setupHospitalClickHandlers();
             } else {
-                container.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">No alternative hospitals available</p>';
+                container.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 20px;">No alternative ${serviceNamePlural.toLowerCase()} available</p>`;
             }
         })
         .catch(error => {
             console.error('Error loading alternative hospitals:', error);
             const container = document.getElementById('alternativeHospitalsContainer');
+            const serviceNamePlural = (window.SERVICE_TYPE === 'vet' ? 'Vets' : 'Hospitals').toLowerCase();
             if (container) {
-                container.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">Error loading hospitals</p>';
+                container.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 20px;">Error loading ${serviceNamePlural}</p>`;
             }
         });
 }
