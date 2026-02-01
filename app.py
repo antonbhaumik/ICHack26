@@ -147,18 +147,32 @@ def get_all_hospitals(latitude, longitude):
     return results
 
 def get_all_vets():
-    """Load all vets from the CSV file"""
+    """Load all vets from the geocoded CSV file"""
     vets = []
+    # Try geocoded file first, fall back to regular file
+    geocoded_path = os.path.join(os.path.dirname(__file__), 'data', 'vets_data_geocoded.csv')
     csv_path = os.path.join(os.path.dirname(__file__), 'data', 'vets_data.csv')
     
+    # Use geocoded file if it exists
+    file_to_use = geocoded_path if os.path.exists(geocoded_path) else csv_path
+    has_coords = os.path.exists(geocoded_path)
+    
     try:
-        with open(csv_path, 'r', encoding='utf-8') as f:
+        with open(file_to_use, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                vets.append({
+                vet_data = {
                     'hospital': row['Hospital Name'],
                     'address': row['Address']
-                })
+                }
+                # Add coordinates if available
+                if has_coords and row.get('Latitude') and row.get('Longitude'):
+                    try:
+                        vet_data['lat'] = float(row['Latitude'])
+                        vet_data['lng'] = float(row['Longitude'])
+                    except (ValueError, KeyError):
+                        pass
+                vets.append(vet_data)
     except Exception as e:
         print(f"Error loading vets data: {e}")
     
@@ -304,28 +318,77 @@ def find_vet():
         return jsonify({'status': 'error', 'message': 'Location not provided'}), 400
 
     try:
-        # Get all vets from CSV
+        import math
+        
+        def haversine_distance(lat1, lon1, lat2, lon2):
+            """Calculate straight-line distance in km using haversine formula"""
+            R = 6371  # Earth's radius in km
+            lat1_rad, lon1_rad = math.radians(lat1), math.radians(lon1)
+            lat2_rad, lon2_rad = math.radians(lat2), math.radians(lon2)
+            
+            dlat = lat2_rad - lat1_rad
+            dlon = lon2_rad - lon1_rad
+            
+            a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
+            c = 2 * math.asin(math.sqrt(a))
+            
+            return R * c
+        
+        # Get all vets from CSV (with pre-computed coordinates if available)
         vets = get_all_vets()
         
         if not vets:
             return jsonify({'status': 'error', 'message': 'No vets found'}), 404
 
-        # Add travel time info to each vet
+        # Filter vets that have coordinates, or geocode the ones that don't
+        geocoded_vets = []
         for vet in vets:
+            # If coordinates are already available, just calculate distance
+            if 'lat' in vet and 'lng' in vet:
+                vet['straight_line_distance'] = haversine_distance(
+                    latitude, longitude, vet['lat'], vet['lng']
+                )
+                geocoded_vets.append(vet)
+            else:
+                # Need to geocode this vet
+                try:
+                    url = "https://maps.googleapis.com/maps/api/geocode/json"
+                    params = {"address": vet['address'], "key": GOOGLE_API_KEY}
+                    r = get(url, params=params)
+                    r.raise_for_status()
+                    geocode_data = r.json()
+                    
+                    if geocode_data["status"] == "OK" and geocode_data["results"]:
+                        location = geocode_data["results"][0]["geometry"]["location"]
+                        vet['lat'] = location['lat']
+                        vet['lng'] = location['lng']
+                        vet['straight_line_distance'] = haversine_distance(
+                            latitude, longitude, location['lat'], location['lng']
+                        )
+                        geocoded_vets.append(vet)
+                except Exception as e:
+                    print(f"Error geocoding {vet['hospital']}: {e}")
+        
+        # Sort by straight-line distance and take top 8
+        geocoded_vets.sort(key=lambda v: v['straight_line_distance'])
+        top_vets = geocoded_vets[:8]
+        
+        # Now calculate accurate travel time for only the top 8
+        for vet in top_vets:
             try:
                 time_info = travel_time(latitude, longitude, vet['address'])
                 vet['duration'] = time_info['duration']
                 vet['distance'] = time_info['distance']
             except Exception as e:
-                print(f"Error calculating time for {vet['hospital']}: {e}")
+                print(f"Error calculating travel time for {vet['hospital']}: {e}")
                 vet['duration'] = float('inf')
                 vet['distance'] = 0
 
-        # Sort by duration (travel time)
-        vets.sort(key=lambda v: v['duration'])
+        # Sort by actual travel time
+        top_vets.sort(key=lambda v: v['duration'])
         
         # Take only the closest 5
-        closest_vets = vets[:5]
+        closest_vets = top_vets[:5]
 
         # Store all 5 vets in session
         session['hospitals'] = closest_vets  # Reuse 'hospitals' key for consistency
