@@ -1,5 +1,13 @@
 function findHospital() {
-    getCurrentLocation()
+    const addressInput = document.getElementById('customAddressInput');
+    const customAddress = addressInput ? addressInput.value.trim() : '';
+    
+    // Use custom address if provided, otherwise use GPS location
+    const locationPromise = customAddress ? 
+        geocodeAddress(customAddress) : 
+        getCurrentLocation();
+    
+    locationPromise
         .then(location => {
             return fetch('/api/find-hospital', {
                 method: 'POST',
@@ -15,12 +23,46 @@ function findHospital() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Unable to get your location. Please enable location services.');
+            alert(customAddress ? 'Unable to find that address.' : 'Unable to get your location. Please enable location services.');
+        });
+}
+
+function toggleCustomAddress() {
+    const section = document.getElementById('customAddressSection');
+    if (section.style.display === 'none') {
+        section.style.display = 'flex';
+        document.getElementById('customAddressInput').focus();
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function geocodeAddress(address) {
+    return fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${window.GOOGLE_API_KEY || ''}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'OK' && data.results && data.results.length > 0) {
+                const location = data.results[0].geometry.location;
+                return {
+                    latitude: location.lat,
+                    longitude: location.lng
+                };
+            } else {
+                throw new Error('Address not found');
+            }
         });
 }
 
 function findVet() {
-    getCurrentLocation()
+    const addressInput = document.getElementById('customAddressInput');
+    const customAddress = addressInput ? addressInput.value.trim() : '';
+    
+    // Use custom address if provided, otherwise use GPS location
+    const locationPromise = customAddress ? 
+        geocodeAddress(customAddress) : 
+        getCurrentLocation();
+    
+    locationPromise
         .then(location => {
             return fetch('/api/find-vet', {
                 method: 'POST',
@@ -36,7 +78,7 @@ function findVet() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Unable to get your location. Please enable location services.');
+            alert(customAddress ? 'Unable to find that address.' : 'Unable to get your location. Please enable location services.');
         });
 }
 
@@ -124,27 +166,55 @@ function initMap() {
             const directionsRenderer = new google.maps.DirectionsRenderer();
             directionsRenderer.setMap(map);
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const origin = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
+            // Get origin from session (either GPS location or custom address)
+            fetch('/api/get-origin')
+                .then(response => response.json())
+                .then(originData => {
+                    if (originData.latitude && originData.longitude) {
+                        const origin = {
+                            lat: originData.latitude,
+                            lng: originData.longitude
+                        };
 
-                    directionsService.route(
-                        {
-                            origin: origin,
-                            destination: destination,
-                            travelMode: google.maps.TravelMode.DRIVING,
-                        },
-                        (result, status) => {
-                            if (status === "OK") {
-                                directionsRenderer.setDirections(result);
+                        directionsService.route(
+                            {
+                                origin: origin,
+                                destination: destination,
+                                travelMode: google.maps.TravelMode.DRIVING,
+                            },
+                            (result, status) => {
+                                if (status === "OK") {
+                                    directionsRenderer.setDirections(result);
+                                }
                             }
-                        }
-                    );
+                        );
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting origin:', error);
+                    // Fallback to geolocation if session origin fails
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition((position) => {
+                            const origin = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+
+                            directionsService.route(
+                                {
+                                    origin: origin,
+                                    destination: destination,
+                                    travelMode: google.maps.TravelMode.DRIVING,
+                                },
+                                (result, status) => {
+                                    if (status === "OK") {
+                                        directionsRenderer.setDirections(result);
+                                    }
+                                }
+                            );
+                        });
+                    }
                 });
-            }
         });
     
     // Load alternative hospitals into the burger menu
@@ -306,9 +376,26 @@ function openGoogleMaps() {
 
     const dest = `${destinationCoords.lat},${destinationCoords.lng}`;
 
-    // Open Google Maps with navigation
-    const url = `https://www.google.com/maps/dir/?api=1&origin=your location&destination=${dest}&travelmode=driving`;
-    window.open(url, '_blank');
+    // Get origin from session to use custom address if provided
+    fetch('/api/get-origin')
+        .then(response => response.json())
+        .then(originData => {
+            if (originData.latitude && originData.longitude) {
+                const origin = `${originData.latitude},${originData.longitude}`;
+                const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving`;
+                window.open(url, '_blank');
+            } else {
+                // Fallback to "your location" if no session origin
+                const url = `https://www.google.com/maps/dir/?api=1&origin=your location&destination=${dest}&travelmode=driving`;
+                window.open(url, '_blank');
+            }
+        })
+        .catch(error => {
+            console.error('Error getting origin:', error);
+            // Fallback to "your location"
+            const url = `https://www.google.com/maps/dir/?api=1&origin=your location&destination=${dest}&travelmode=driving`;
+            window.open(url, '_blank');
+        });
 }
 
 function openUber() {
@@ -317,14 +404,28 @@ function openUber() {
         return;
     }
 
-    getCurrentLocation()
-        .then(origin => {
-            const url = `https://m.uber.com/go/product-selection?drop[0]={"latitude"%3A${destinationCoords.lat}%2C"longitude"%3A${destinationCoords.lng}%2C"provider"%3A"uber_places"}&pickup={"latitude"%3A${origin.latitude}%2C"longitude"%3A${origin.longitude}%2C"provider"%3A"uber_places"}`;
-            window.open(url, '_blank');
+    // Try to get origin from session first (custom address), fallback to GPS
+    fetch('/api/get-origin')
+        .then(response => response.json())
+        .then(originData => {
+            if (originData.latitude && originData.longitude) {
+                const url = `https://m.uber.com/go/product-selection?drop[0]={"latitude"%3A${destinationCoords.lat}%2C"longitude"%3A${destinationCoords.lng}%2C"provider"%3A"uber_places"}&pickup={"latitude"%3A${originData.latitude}%2C"longitude"%3A${originData.longitude}%2C"provider"%3A"uber_places"}`;
+                window.open(url, '_blank');
+            } else {
+                throw new Error('No session origin, using GPS');
+            }
         })
         .catch(error => {
-            console.error('Error getting location:', error);
-            alert('Unable to get your current location');
+            // Fallback to GPS location
+            getCurrentLocation()
+                .then(origin => {
+                    const url = `https://m.uber.com/go/product-selection?drop[0]={"latitude"%3A${destinationCoords.lat}%2C"longitude"%3A${destinationCoords.lng}%2C"provider"%3A"uber_places"}&pickup={"latitude"%3A${origin.latitude}%2C"longitude"%3A${origin.longitude}%2C"provider"%3A"uber_places"}`;
+                    window.open(url, '_blank');
+                })
+                .catch(error => {
+                    console.error('Error getting location:', error);
+                    alert('Unable to get your location');
+                });
         });
 }
 

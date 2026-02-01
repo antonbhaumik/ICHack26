@@ -129,6 +129,57 @@ h1{
   font-size: 13px;
   color: var(--muted);
   text-align: center;
+  line-height: 1.6;
+}
+
+.custom-address-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.custom-address-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.custom-address-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(22, 163, 74, 0.05);
+  border: 1px solid rgba(22, 163, 74, 0.15);
+  border-radius: 10px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-address-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.8);
+  transition: border-color 0.2s ease;
+}
+
+.custom-address-input:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 /* Mobile */

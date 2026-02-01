@@ -92,7 +92,7 @@ def find_hospital_in_data(hospital_name, hospital_df):
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', api_key=GOOGLE_API_KEY)
 
 @app.route('/map')
 def map_view():
@@ -373,6 +373,19 @@ def select_hospital():
 def call_taxi():
     # To be implemented
     return jsonify({'status': 'success'})
+
+@app.route('/api/get-origin')
+def get_origin():
+    """Return the user's origin location from session"""
+    user_location = session.get('user_location', {})
+    
+    if user_location and 'latitude' in user_location and 'longitude' in user_location:
+        return jsonify({
+            'latitude': user_location['latitude'],
+            'longitude': user_location['longitude']
+        })
+    
+    return jsonify({'status': 'error', 'message': 'No origin location found'}), 404
 
 @app.route('/api/get-destination')
 def get_destination():

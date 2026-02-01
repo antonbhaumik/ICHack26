@@ -33,11 +33,23 @@
 
         <p class="hint">
           If someone is in immediate danger, call emergency services now.
+          <br>
+          <a href="#" class="custom-address-link" onclick="toggleCustomAddress(); return false;">Use a different address</a>
         </p>
+        
+        <div id="customAddressSection" class="custom-address-section" style="display: none;">
+          <input 
+            type="text" 
+            id="customAddressInput" 
+            class="custom-address-input" 
+            placeholder="Enter an address, then click a button above"
+          />
+        </div>
       </div>
     </section>
   </main>
 
+  <script>window.GOOGLE_API_KEY = {{ api_key|tojson }};</script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
