@@ -97,6 +97,9 @@ function initMap() {
             destinationCoords = {lat: data.latitude, lng: data.longitude};
             const destination = destinationCoords;
 
+            // Update current hospital banner
+            updateCurrentHospitalBanner(data);
+
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 14,
                 center: destination,
@@ -131,6 +134,27 @@ function initMap() {
     
     // Load alternative hospitals into the burger menu
     loadAlternativeHospitals();
+}
+
+function updateCurrentHospitalBanner(data) {
+    const banner = document.getElementById('currentHospitalBanner');
+    if (!banner) return;
+
+    const nameEl = banner.querySelector('.hospital-name');
+    const detailsEl = banner.querySelector('.hospital-details');
+
+    if (data.name && data.duration) {
+        const durationMin = Math.round(data.duration / 60);
+        const distanceKm = (data.distance / 1000).toFixed(1);
+        
+        nameEl.textContent = data.name;
+        detailsEl.textContent = `${durationMin} min · ${distanceKm} km`;
+    } else if (data.name) {
+        nameEl.textContent = data.name;
+        detailsEl.textContent = '';
+    } else {
+        banner.style.display = 'none';
+    }
 }
 
 function loadAlternativeHospitals() {

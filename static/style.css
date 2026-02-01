@@ -194,8 +194,8 @@ h1{
 /* Burger and right slide-in menu */
 .burger-btn{
   position: fixed;
-  top: 18px;
-  right: 18px;
+  top: 60px;
+  right: 8px;
   width: 46px;
   height: 46px;
   display: inline-flex;
@@ -300,6 +300,53 @@ h1{
 .side-nav li{ margin: 10px 0; }
 .side-nav a{ color: var(--text); text-decoration: none; font-weight: 700; display: block; padding: 10px 6px; border-radius: 8px; }
 .side-nav a:hover{ background: rgba(0,0,0,0.04); }
+
+.current-hospital-banner {
+    position: fixed;
+    top: 60px;
+    left: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    z-index: 50;
+    max-width: calc(100vw - 100px);
+}
+
+.hospital-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hospital-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+.hospital-details {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+    .current-hospital-banner {
+        top: 60px;
+        left: 8px;
+        right: 64px;
+        padding: 10px 12px;
+    }
+    .hospital-name {
+        font-size: 13px;
+    }
+    .hospital-details {
+        font-size: 11px;
+    }
+}
 
 @media (min-width: 900px){
   .side-menu{ width: 300px; }
