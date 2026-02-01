@@ -27,10 +27,11 @@ A Flask web app that helps users find the best A&E option nearby by combining tr
 ```bash
 pip install -r requirements.txt
 ```
+You may want to use a python `venv` or conda environment to manage your dependencies.
 
-2) Set environment variables:
+2) Set environment variables in a `.env` file:
 ```bash
-set GOOGLE_API_KEY=YOUR_KEY
+GOOGLE_API_KEY=YOUR_KEY
 ```
 
 3) Run the app:
@@ -44,11 +45,3 @@ Open `http://localhost:5000` in your browser.
 - The hospital list is scraped from the NHS service-search results page.
 - The wait-time predictor is a heuristic model; it uses `hospital_data.csv` as a base.
 - Google API usage may incur costs depending on your account and quotas.
-
-## API Endpoints (high level)
-- `POST /api/find-hospital` Find and rank nearby hospitals
-- `POST /api/find-vet` Find nearby vets
-- `GET /api/alternative-hospitals` List alternatives
-- `POST /api/select-hospital` Switch selection
-- `GET /api/get-origin` User origin from session
-- `GET /api/get-destination` Selected destination details
