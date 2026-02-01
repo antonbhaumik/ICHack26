@@ -45,9 +45,15 @@
             <button class="action-button navigate-button" onclick="openGoogleMaps()">
                 Get there with Google Maps
             </button>
+            {% if service_type == 'vet' %}
+            <button class="action-button emergency-button" onclick="callRSPCA()">
+                Call RSPCA
+            </button>
+            {% else %}
             <button class="action-button emergency-button" onclick="call999()">
                 Call 999
             </button>
+            {% endif %}
         </div>
     </div>
 s

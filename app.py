@@ -1,3 +1,4 @@
+import csv
 import os
 
 from bs4 import BeautifulSoup
@@ -18,7 +19,8 @@ def home():
 @app.route('/map')
 def map_view():
     place = request.args.get('place', '')
-    return render_template('map.html', api_key=GOOGLE_API_KEY, place=place)
+    service_type = session.get('service_type', 'hospital')
+    return render_template('map.html', api_key=GOOGLE_API_KEY, place=place, service_type=service_type)
 
 
 @app.route('/api/get-location', methods=['POST'])
@@ -65,6 +67,24 @@ def get_all_hospitals(latitude, longitude):
         })
 
     return results
+
+def get_all_vets():
+    """Load all vets from the CSV file"""
+    vets = []
+    csv_path = os.path.join(os.path.dirname(__file__), 'data', 'vets_data.csv')
+    
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                vets.append({
+                    'hospital': row['Hospital Name'],
+                    'address': row['Address']
+                })
+    except Exception as e:
+        print(f"Error loading vets data: {e}")
+    
+    return vets
 
 def travel_time(latitude, longitude, hospital):
     url = "https://maps.googleapis.com/maps/api/directions/json"
@@ -126,6 +146,7 @@ def find_hospital():
         # Store all 5 hospitals in session
         session['hospitals'] = hospitals
         session['user_location'] = {'latitude': latitude, 'longitude': longitude}
+        session['service_type'] = 'hospital'
 
         return jsonify({'status': 'success', 'hospitals': hospitals})
     except Exception as e:
@@ -133,8 +154,45 @@ def find_hospital():
 
 @app.route('/api/find-vet', methods=['POST'])
 def find_vet():
-    # To be implemented
-    return jsonify({'status': 'success'})
+    data = request.get_json()
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
+
+    if not latitude or not longitude:
+        return jsonify({'status': 'error', 'message': 'Location not provided'}), 400
+
+    try:
+        # Get all vets from CSV
+        vets = get_all_vets()
+        
+        if not vets:
+            return jsonify({'status': 'error', 'message': 'No vets found'}), 404
+
+        # Add travel time info to each vet
+        for vet in vets:
+            try:
+                time_info = travel_time(latitude, longitude, vet['address'])
+                vet['duration'] = time_info['duration']
+                vet['distance'] = time_info['distance']
+            except Exception as e:
+                print(f"Error calculating time for {vet['hospital']}: {e}")
+                vet['duration'] = float('inf')
+                vet['distance'] = 0
+
+        # Sort by duration (travel time)
+        vets.sort(key=lambda v: v['duration'])
+        
+        # Take only the closest 5
+        closest_vets = vets[:5]
+
+        # Store all 5 vets in session
+        session['hospitals'] = closest_vets  # Reuse 'hospitals' key for consistency
+        session['user_location'] = {'latitude': latitude, 'longitude': longitude}
+        session['service_type'] = 'vet'
+
+        return jsonify({'status': 'success', 'vets': closest_vets})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/alternative-hospitals')
 def get_alternative_hospitals():

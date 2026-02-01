@@ -62,6 +62,13 @@ function call999() {
     }
 }
 
+function callRSPCA() {
+    // To be implemented - RSPCA calling functionality
+    if (confirm('Call RSPCA?')) {
+        console.log('RSPCA call initiated');
+    }
+}
+
 function getCurrentLocation() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
