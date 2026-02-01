@@ -186,7 +186,9 @@ function initMap() {
             trafficLayer = new google.maps.TrafficLayer();
 
             const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer();
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true // We'll add custom markers
+            });
             directionsRenderer.setMap(map);
 
             // Get origin from session (either GPS location or custom address)
@@ -206,7 +208,51 @@ function initMap() {
                                 travelMode: google.maps.TravelMode.DRIVING,
                             },
                             (result, status) => {
+                                    
+                                    // Add custom origin marker (blue circle for current location)
+                                    new google.maps.Marker({
+                                        position: origin,
+                                        map: map,
+                                        icon: {
+                                            path: google.maps.SymbolPath.CIRCLE,
+                                            scale: 8,
+                                            fillColor: '#4285F4',
+                                            fillOpacity: 1,
+                                            strokeColor: '#FFFFFF',
+                                            strokeWeight: 2
+                                        },
+                                        zIndex: 1000
+                                    });
+                                    
+                                    // Add custom destination marker (red pin)
+                                    new google.maps.Marker({
+                                        position: destination,
+                                        map: map,
+                                        zIndex: 1000
+                                    });
                                 if (status === "OK") {
+                                        
+                                        // Add custom origin marker (blue circle for current location)
+                                        new google.maps.Marker({
+                                            position: origin,
+                                            map: map,
+                                            icon: {
+                                                path: google.maps.SymbolPath.CIRCLE,
+                                                scale: 8,
+                                                fillColor: '#4285F4',
+                                                fillOpacity: 1,
+                                                strokeColor: '#FFFFFF',
+                                                strokeWeight: 2
+                                            },
+                                            zIndex: 1000
+                                        });
+                                        
+                                        // Add custom destination marker (red pin)
+                                        new google.maps.Marker({
+                                            position: destination,
+                                            map: map,
+                                            zIndex: 1000
+                                        });
                                     directionsRenderer.setDirections(result);
                                 }
                             }
