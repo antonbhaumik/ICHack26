@@ -95,6 +95,10 @@ function getCurrentLocation() {
     });
 }
 
+let trafficLayer = null;
+let mapInstance = null;
+let trafficEnabled = false;
+
 function initMap() {
     const place = (window.MAP_PLACE || '').toString();
     const qs = place ? `?place=${encodeURIComponent(place)}` : '';
@@ -111,6 +115,10 @@ function initMap() {
                 zoom: 14,
                 center: destination,
             });
+            mapInstance = map;
+
+            // Create traffic layer but don't show it by default
+            trafficLayer = new google.maps.TrafficLayer();
 
             const directionsService = new google.maps.DirectionsService();
             const directionsRenderer = new google.maps.DirectionsRenderer();
@@ -141,6 +149,18 @@ function initMap() {
     
     // Load alternative hospitals into the burger menu
     loadAlternativeHospitals();
+}
+
+function toggleTraffic() {
+    if (!trafficLayer || !mapInstance) return;
+    
+    trafficEnabled = !trafficEnabled;
+    trafficLayer.setMap(trafficEnabled ? mapInstance : null);
+    
+    const statusEl = document.getElementById('trafficStatus');
+    if (statusEl) {
+        statusEl.textContent = trafficEnabled ? 'ON' : 'OFF';
+    }
 }
 
 function updateCurrentHospitalBanner(data) {

@@ -143,6 +143,37 @@ h1{
     height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+.traffic-toggle {
+    position: absolute;
+    bottom: calc(1.5rem * 2 + 3.6rem + 1rem + 10px);
+    left: 10px;
+    z-index: 10;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    opacity: 0.95;
+}
+
+.traffic-toggle:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text);
+    border-color: var(--primary);
+}
+
+.traffic-toggle:active {
+    transform: scale(0.97);
 }
 
 .map-placeholder {

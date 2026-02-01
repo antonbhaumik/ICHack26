@@ -36,6 +36,9 @@
     </aside>
 
     <div class="map-container">
+        <button id="trafficToggle" class="traffic-toggle" onclick="toggleTraffic()" aria-label="Toggle traffic overlay">
+            🚦 Traffic Overlay: <span id="trafficStatus">OFF</span>
+        </button>
         <div id="map" style="flex: 1; width: 100%;"></div>
 
         <div class="map-actions">
