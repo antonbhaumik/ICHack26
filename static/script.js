@@ -1,4 +1,20 @@
+function showLoading() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.style.display = 'none';
+    }
+}
+
 function findHospital() {
+    showLoading();
+    
     const addressInput = document.getElementById('customAddressInput');
     const customAddress = addressInput ? addressInput.value.trim() : '';
     
@@ -54,6 +70,8 @@ function geocodeAddress(address) {
 }
 
 function findVet() {
+    showLoading();
+    
     const addressInput = document.getElementById('customAddressInput');
     const customAddress = addressInput ? addressInput.value.trim() : '';
     
@@ -77,6 +95,7 @@ function findVet() {
             window.location.href = '/map';
         })
         .catch(error => {
+            hideLoading();
             console.error('Error:', error);
             alert(customAddress ? 'Unable to find that address.' : 'Unable to get your location. Please enable location services.');
         });
