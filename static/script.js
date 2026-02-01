@@ -128,6 +128,105 @@ function initMap() {
                 });
             }
         });
+    
+    // Load alternative hospitals into the burger menu
+    loadAlternativeHospitals();
+}
+
+function loadAlternativeHospitals() {
+    fetch('/api/alternative-hospitals')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('alternativeHospitalsContainer');
+            if (!container) return;
+
+            if (data.status === 'success' && data.hospitals && data.hospitals.length > 0) {
+                container.innerHTML = '<h2 style="margin-bottom: 12px; font-size: 18px;">Alternative Hospitals</h2>';
+                
+                data.hospitals.forEach((hospital, index) => {
+                    const durationMin = Math.round(hospital.duration / 60);
+                    const distanceKm = (hospital.distance / 1000).toFixed(1);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'place-card';
+                    card.setAttribute('data-hospital-index', index + 1);
+                    card.setAttribute('tabindex', '0');
+                    
+                    card.innerHTML = `
+                        <h3>${hospital.hospital}</h3>
+                        <p class="place-desc">${hospital.address}</p>
+                        <p class="place-meta">
+                            <strong>Travel time:</strong> ~${durationMin} min | 
+                            <strong>Distance:</strong> ${distanceKm} km
+                        </p>
+                        <button class="visit-btn" data-hospital-index="${index + 1}">Go to this hospital</button>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+
+                // Add click handlers for the hospital cards
+                setupHospitalClickHandlers();
+            } else {
+                container.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">No alternative hospitals available</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading alternative hospitals:', error);
+            const container = document.getElementById('alternativeHospitalsContainer');
+            if (container) {
+                container.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">Error loading hospitals</p>';
+            }
+        });
+}
+
+function setupHospitalClickHandlers() {
+    // Add click handlers for visit buttons
+    document.querySelectorAll('.visit-btn[data-hospital-index]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.getAttribute('data-hospital-index'));
+            navigateToHospital(index);
+        });
+    });
+
+    // Make clicking the whole card navigate as well
+    document.querySelectorAll('.place-card[data-hospital-index]').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.visit-btn')) return;
+            const index = parseInt(card.getAttribute('data-hospital-index'));
+            navigateToHospital(index);
+        });
+    });
+}
+
+function navigateToHospital(hospitalIndex) {
+    // hospitalIndex is 1-based (for alternatives), need to convert to 0-based absolute index
+    // Alternative hospitals are at indices 1-4 in the session array (0 is the best/current one)
+    const absoluteIndex = hospitalIndex; // hospitalIndex already represents the session array index
+    
+    // Call backend to switch the selected hospital to the front
+    fetch('/api/select-hospital', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ hospital_index: absoluteIndex })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Close the menu and reload the page to show the new route
+            toggleMenu();
+            window.location.reload();
+        } else {
+            alert('Failed to switch hospital');
+        }
+    })
+    .catch(error => {
+        console.error('Error selecting hospital:', error);
+        alert('Error switching hospital');
+    });
 }
 
 function openGoogleMaps() {
@@ -189,28 +288,5 @@ document.addEventListener('DOMContentLoaded', () => {
             const menu = document.getElementById('sideMenu');
             if (menu && menu.classList.contains('open')) toggleMenu();
         }
-    });
-
-    // hook up place buttons
-    function goToPlace(place){
-        // navigate to map with place query param
-        window.location.href = `/map?place=${encodeURIComponent(place)}`;
-    }
-
-    document.querySelectorAll('.visit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const p = btn.getAttribute('data-place');
-            goToPlace(p);
-        });
-    });
-
-    // make clicking the whole card navigate as well
-    document.querySelectorAll('.place-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            // avoid double-firing when button clicked
-            if (e.target.closest('.visit-btn')) return;
-            const p = card.getAttribute('data-place');
-            goToPlace(p);
-        });
     });
 });
