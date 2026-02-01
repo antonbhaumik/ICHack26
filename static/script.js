@@ -140,6 +140,26 @@ function getCurrentLocation() {
 let trafficLayer = null;
 let mapInstance = null;
 let trafficEnabled = false;
+let pageLoadTime = Date.now();
+
+// Update the "last updated" timestamp every minute
+function updateLastUpdatedText() {
+    const lastUpdatedEl = document.getElementById('lastUpdated');
+    if (!lastUpdatedEl) return;
+    
+    const minutesAgo = Math.floor((Date.now() - pageLoadTime) / 60000);
+    
+    if (minutesAgo === 0) {
+        lastUpdatedEl.textContent = 'Last updated just now';
+    } else if (minutesAgo === 1) {
+        lastUpdatedEl.textContent = 'Last updated 1 minute ago';
+    } else {
+        lastUpdatedEl.textContent = `Last updated ${minutesAgo} minutes ago`;
+    }
+}
+
+// Update every minute
+setInterval(updateLastUpdatedText, 60000);
 
 function initMap() {
     const place = (window.MAP_PLACE || '').toString();
