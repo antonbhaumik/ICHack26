@@ -89,7 +89,9 @@ function getCurrentLocation() {
 }
 
 function initMap() {
-    fetch('/api/get-destination')
+    const place = (window.MAP_PLACE || '').toString();
+    const qs = place ? `?place=${encodeURIComponent(place)}` : '';
+    fetch('/api/get-destination' + qs)
         .then(response => response.json())
         .then(data => {
             destinationCoords = {lat: data.latitude, lng: data.longitude};
@@ -157,3 +159,58 @@ function openUber() {
             alert('Unable to get your current location');
         });
 }
+
+// --- Burger / Side menu toggle ---
+function toggleMenu() {
+    const menu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('menuOverlay');
+    const btn = document.getElementById('burgerBtn');
+    if (!menu || !overlay || !btn) return;
+
+    const willOpen = !menu.classList.contains('open');
+    menu.classList.toggle('open', willOpen);
+    overlay.classList.toggle('open', willOpen);
+    menu.setAttribute('aria-hidden', String(!willOpen));
+    overlay.setAttribute('aria-hidden', String(!willOpen));
+    btn.setAttribute('aria-expanded', String(willOpen));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('burgerBtn');
+    const close = document.getElementById('closeMenu');
+    const overlay = document.getElementById('menuOverlay');
+    btn && btn.addEventListener('click', toggleMenu);
+    close && close.addEventListener('click', toggleMenu);
+    overlay && overlay.addEventListener('click', toggleMenu);
+
+    // close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const menu = document.getElementById('sideMenu');
+            if (menu && menu.classList.contains('open')) toggleMenu();
+        }
+    });
+
+    // hook up place buttons
+    function goToPlace(place){
+        // navigate to map with place query param
+        window.location.href = `/map?place=${encodeURIComponent(place)}`;
+    }
+
+    document.querySelectorAll('.visit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const p = btn.getAttribute('data-place');
+            goToPlace(p);
+        });
+    });
+
+    // make clicking the whole card navigate as well
+    document.querySelectorAll('.place-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // avoid double-firing when button clicked
+            if (e.target.closest('.visit-btn')) return;
+            const p = card.getAttribute('data-place');
+            goToPlace(p);
+        });
+    });
+});
