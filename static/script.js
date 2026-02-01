@@ -164,7 +164,11 @@ function updateLastUpdatedText() {
 // Update every minute
 setInterval(updateLastUpdatedText, 60000);
 
-function initMap() {
+window.actualInitMap = function() {
+    // Hide loading indicator
+    const loadingEl = document.getElementById('mapLoading');
+    if (loadingEl) loadingEl.style.display = 'none';
+    
     const place = (window.MAP_PLACE || '').toString();
     const qs = place ? `?place=${encodeURIComponent(place)}` : '';
     fetch('/api/get-destination' + qs)
@@ -208,6 +212,8 @@ function initMap() {
                                 travelMode: google.maps.TravelMode.DRIVING,
                             },
                             (result, status) => {
+                                if (status === "OK") {
+                                    directionsRenderer.setDirections(result);
                                     
                                     // Add custom origin marker (blue circle for current location)
                                     new google.maps.Marker({
@@ -230,30 +236,9 @@ function initMap() {
                                         map: map,
                                         zIndex: 1000
                                     });
-                                if (status === "OK") {
-                                        
-                                        // Add custom origin marker (blue circle for current location)
-                                        new google.maps.Marker({
-                                            position: origin,
-                                            map: map,
-                                            icon: {
-                                                path: google.maps.SymbolPath.CIRCLE,
-                                                scale: 8,
-                                                fillColor: '#4285F4',
-                                                fillOpacity: 1,
-                                                strokeColor: '#FFFFFF',
-                                                strokeWeight: 2
-                                            },
-                                            zIndex: 1000
-                                        });
-                                        
-                                        // Add custom destination marker (red pin)
-                                        new google.maps.Marker({
-                                            position: destination,
-                                            map: map,
-                                            zIndex: 1000
-                                        });
-                                    directionsRenderer.setDirections(result);
+                                } else {
+                                    console.error('Directions request failed:', status);
+                                    alert('Unable to calculate route. Please try again.');
                                 }
                             }
                         );
@@ -263,27 +248,62 @@ function initMap() {
                     console.error('Error getting origin:', error);
                     // Fallback to geolocation if session origin fails
                     if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition((position) => {
-                            const origin = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                const origin = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude
+                                };
 
-                            directionsService.route(
-                                {
-                                    origin: origin,
-                                    destination: destination,
-                                    travelMode: google.maps.TravelMode.DRIVING,
-                                },
-                                (result, status) => {
-                                    if (status === "OK") {
-                                        directionsRenderer.setDirections(result);
+                                directionsService.route(
+                                    {
+                                        origin: origin,
+                                        destination: destination,
+                                        travelMode: google.maps.TravelMode.DRIVING,
+                                    },
+                                    (result, status) => {
+                                        if (status === "OK") {
+                                            directionsRenderer.setDirections(result);
+                                        } else {
+                                            console.error('Directions request failed:', status);
+                                            alert('Unable to calculate route. Please try again.');
+                                        }
                                     }
-                                }
-                            );
-                        });
+                                );
+                            },
+                            (error) => {
+                                console.error('Geolocation failed:', error);
+                                alert('Unable to get your location. Please enable location services.');
+                            },
+                            {
+                                timeout: 10000,
+                                maximumAge: 300000
+                            }
+                        );
+                    } else {
+                        alert('Geolocation is not supported by your browser.');
                     }
                 });
+        })
+        .catch(error => {
+            console.error('Error loading destination:', error);
+            const loadingEl = document.getElementById('mapLoading');
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div style="color: #d32f2f; text-align: center;">
+                        <p>Unable to load destination</p>
+                        <button onclick="location.reload()" style="
+                            padding: 10px 20px;
+                            background: #4CAF50;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Retry</button>
+                    </div>
+                `;
+            }
         });
     
     // Load alternative hospitals into the burger menu

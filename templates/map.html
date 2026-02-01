@@ -5,10 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospital Route</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        // Add timeout to detect if Google Maps fails to load
+        let mapLoadTimeout;
+        window.initMap = function() {
+            clearTimeout(mapLoadTimeout);
+            if (window.actualInitMap) window.actualInitMap();
+        };
+        
+        // Set a timeout to show error if Maps API doesn't load within 10 seconds
+        mapLoadTimeout = setTimeout(() => {
+            const loadingEl = document.getElementById('mapLoading');
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div style="color: #d32f2f; text-align: center;">
+                        <p>Unable to load Google Maps</p>
+                        <button onclick="location.reload()" style="
+                            padding: 10px 20px;
+                            background: #4CAF50;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">Retry</button>
+                    </div>
+                `;
+            }
+        }, 10000);
+    </script>
     <script
         src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap"
         async
-        defer>
+        defer
+        onerror="document.getElementById('mapLoading').innerHTML='<p style=\'color: #d32f2f; text-align: center;\'>Failed to load Google Maps. <button onclick=\'location.reload()\' style=\'padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;\'>Retry</button></p>';">
     </script>
 </head>
 <body>
@@ -39,6 +69,9 @@
             🚦 Traffic Overlay: <span id="trafficStatus">OFF</span>
         </button>
         <div id="lastUpdated" class="last-updated">Last updated just now</div>
+        <div id="mapLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+            <p style="text-align: center; color: #666;">Loading map...</p>
+        </div>
         <div id="map" style="flex: 1; width: 100%;"></div>
 
         <div class="map-actions">
