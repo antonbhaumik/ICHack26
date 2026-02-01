@@ -12,6 +12,31 @@
     </script>
 </head>
 <body>
+    <button id="burgerBtn" class="burger-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sideMenu">
+        <span class="burger-lines"></span>
+    </button>
+
+    <div id="menuOverlay" class="menu-overlay" tabindex="-1" aria-hidden="true"></div>
+
+    <aside id="sideMenu" class="side-menu" aria-hidden="true">
+        <button id="closeMenu" class="close-menu" aria-label="Close menu">&times;</button>
+        <div class="side-content">
+            <div class="place-card" data-place="stonehenge" tabindex="0">
+                <h3>Stonehenge</h3>
+                <p class="place-desc">A prehistoric monument in Wiltshire, England, consisting of a ring of standing stones. Estimated construction around 3000–2000 BC.</p>
+                <p class="place-meta"><strong>Coords:</strong> 51.1789, -1.8262</p>
+                <button class="visit-btn" data-place="stonehenge">Go to Stonehenge</button>
+            </div>
+
+            <div class="place-card" data-place="bigben" tabindex="0">
+                <h3>Big Ben</h3>
+                <p class="place-desc">The nickname for the Great Bell of the striking clock at the north end of the Palace of Westminster in London, commonly extended to refer to both the clock and the clock tower.</p>
+                <p class="place-meta"><strong>Coords:</strong> 51.5007, -0.1246</p>
+                <button class="visit-btn" data-place="bigben">Go to Big Ben</button>
+            </div>
+        </div>
+    </aside>
+
     <div class="map-container">
         <div id="map" style="flex: 1; width: 100%;"></div>
 
@@ -27,7 +52,8 @@
             </button>
         </div>
     </div>
-
+s
+    <script>window.MAP_PLACE = {{ request.args.get('place', '')|tojson }};</script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

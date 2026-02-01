@@ -19,7 +19,8 @@ def home():
 
 @app.route('/map')
 def map_view():
-    return render_template('map.html', api_key=GOOGLE_API_KEY)
+    place = request.args.get('place', '')
+    return render_template('map.html', api_key=GOOGLE_API_KEY, place=place)
 
 
 @app.route('/api/get-location', methods=['POST'])
@@ -120,12 +121,26 @@ def call_taxi():
 
 @app.route('/api/get-destination')
 def get_destination():
-    # TODO: Implement logic to find and return the best hospital
-    # For now, return a placeholder
+    # Return coordinates based on optional `place` query parameter
+    place = (request.args.get('place') or '').lower()
+    if place == 'stonehenge':
+        return jsonify({
+            'latitude': 51.1789,
+            'longitude': -1.8262,
+            'name': 'Stonehenge'
+        })
+    if place == 'bigben' or place == 'big ben':
+        return jsonify({
+            'latitude': 51.5007,
+            'longitude': -0.1246,
+            'name': 'Big Ben'
+        })
+
+    # Default placeholder (central London)
     return jsonify({
         'latitude': 51.5074,
         'longitude': -0.1278,
-        'name': 'Hospital Name'
+        'name': 'Default Destination'
     })
 
 if __name__ == '__main__':
