@@ -31,7 +31,6 @@ pip install -r requirements.txt
 2) Set environment variables:
 ```bash
 set GOOGLE_API_KEY=YOUR_KEY
-set SECRET_KEY=YOUR_SECRET
 ```
 
 3) Run the app:
