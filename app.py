@@ -484,21 +484,6 @@ def get_destination():
                 })
         except Exception as e:
             print(f"Error geocoding hospital: {e}")
-    
-    # Fallback: Return coordinates based on optional `place` query parameter
-    place = (request.args.get('place') or '').lower()
-    if place == 'stonehenge':
-        return jsonify({
-            'latitude': 51.1789,
-            'longitude': -1.8262,
-            'name': 'Stonehenge'
-        })
-    if place == 'bigben' or place == 'big ben':
-        return jsonify({
-            'latitude': 51.5007,
-            'longitude': -0.1246,
-            'name': 'Big Ben'
-        })
 
     # Default placeholder (central London)
     return jsonify({
